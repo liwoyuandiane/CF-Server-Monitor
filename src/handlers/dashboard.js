@@ -193,13 +193,13 @@ export async function handleDashboard(request, env, sys) {
                 </div>
                 <span class="stat-value">${disk}%</span>
               </div>
-              <div class="stat-row network-stats">
+              <div class="stat-row">
                 <span class="stat-key">NET</span>
                 <span class="net-down">▼ ${netInSpeed}/s</span>
                 <span class="net-up">▲ ${netOutSpeed}/s</span>
               </div>
-              <div class="stat-row traffic-stats">
-                <span class="stat-key">TRAFFIC</span>
+              <div class="stat-row">
+                <span class="stat-key">TRF</span>
                 <span class="net-down">▼ ${monthlyRx}</span>
                 <span class="net-up">▲ ${monthlyTx}</span>
               </div>
@@ -686,11 +686,6 @@ export async function handleDashboard(request, env, sys) {
       min-width: 40px;
       text-align: right;
       font-weight: 600;
-    }
-    
-    .network-stats {
-      display: flex;
-      gap: 16px;
     }
     
     .net-down { color: var(--accent-green); font-size: 10px; }
