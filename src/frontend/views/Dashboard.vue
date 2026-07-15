@@ -41,7 +41,7 @@
           @click="setFilter(code)"
         >
           <span v-if="code === 'unknown'" class="filter-tag-icon">🏳️</span>
-          <img v-else-if="code !== 'all'" :src="'/flags/' + getFlagRegionCode(code) + '.svg'" :alt="code">
+          <img v-else-if="code !== 'all'" :src="getPublicAssetUrl('flags/' + getFlagRegionCode(code) + '.svg')" :alt="code">
           {{ code === 'all' ? '[' + trans.all + ']' : code === 'unknown' ? 'UNKNOWN' : code.toUpperCase() }} {{ count }}
         </span>
       </div>
@@ -131,7 +131,7 @@
               <td><b>{{ server.name }}</b></td>
               <td>
                 <span v-if="server.region && server.region !== 'xx'">
-                  <img :src="'/flags/' + getFlagRegionCode(server.region) + '.svg'" :alt="server.region" class="flag-img">
+                  <img :src="getPublicAssetUrl('flags/' + getFlagRegionCode(server.region) + '.svg')" :alt="server.region" class="flag-img">
                 </span>
                 <span v-else>🏳️</span>
                 {{ (server.region || 'XX').toUpperCase() }}
@@ -219,7 +219,7 @@ import TerminalHeader from '../components/TerminalHeader.vue'
 import ServerCard from '../components/ServerCard.vue'
 import Footer from '../components/Footer.vue'
 import { fetchConfig, fetchServersAll, fetchServersAllWithProgress, formatBytes, createLiveSocket, getFlagRegionCode, getApiBases, getTrafficUsagePercent, isServerOnline } from '../utils/api.js'
-import { getTitle, hasMultipleApiBases } from '../utils/config'
+import { getTitle, hasMultipleApiBases, getPublicAssetUrl } from '../utils/config'
 import { currentLang, useTranslation } from '../utils/i18n.js'
 import { TIME, DEFAULT_SITE_TITLE } from '../utils/constants'
 import { normalizeTimestamp as normalizeMetricTimestamp } from '../utils/time.js'
@@ -688,7 +688,7 @@ const startLiveSocket = () => {
 const initMap = () => {
   if (!window.L) {
     const script = document.createElement('script')
-    script.src = '/leaflet.js'
+    script.src = getPublicAssetUrl('leaflet.js')
     script.onload = () => {
       loadLeafletCSS()
     }
@@ -701,7 +701,7 @@ const initMap = () => {
 const loadLeafletCSS = () => {
   const link = document.createElement('link')
   link.rel = 'stylesheet'
-  link.href = '/leaflet.css'
+  link.href = getPublicAssetUrl('leaflet.css')
   document.head.appendChild(link)
   link.onload = () => {
     createMap()
@@ -720,7 +720,7 @@ const createMap = () => {
 
   window.L.control.zoom({ position: 'bottomright' }).addTo(window.myMap)
 
-  fetch('/world.zh.json')
+  fetch(getPublicAssetUrl('world.zh.json'))
     .then(res => res.json())
     .then(worldGeoJson => {
       window.worldGeoJson = worldGeoJson

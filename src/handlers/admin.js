@@ -23,11 +23,24 @@ function sanitizeCspDomains(input) {
   return input
     .split(',')
     .map(s => s.trim())
-    .filter(domain => {
-      // 只允许 https:// 开头的有效域名
-      return domain.length > 0 && /^https:\/\/[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+$/.test(domain);
-    })
+    .map(normalizeCspOrigin)
+    .filter(Boolean)
+    .filter((domain, index, arr) => arr.indexOf(domain) === index)
     .join(',');
+}
+
+function normalizeCspOrigin(value) {
+  const raw = String(value || '').trim();
+  if (!raw || /[\s;"']/.test(raw)) return '';
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return '';
+    if (url.username || url.password || url.search || url.hash) return '';
+    if (url.pathname && url.pathname !== '/') return '';
+    return url.origin;
+  } catch (_) {
+    return '';
+  }
 }
 
 async function deleteServer(db, id) {

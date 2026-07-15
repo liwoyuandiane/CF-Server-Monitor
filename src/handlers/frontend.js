@@ -44,6 +44,27 @@ function escapeCssString(str) {
   return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
 }
 
+function normalizeCspOrigin(value) {
+  const raw = String(value || '').trim();
+  if (!raw || /[\s;"']/.test(raw)) return '';
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return '';
+    if (url.username || url.password || url.search || url.hash) return '';
+    if (url.pathname && url.pathname !== '/') return '';
+    return url.origin;
+  } catch (_) {
+    return '';
+  }
+}
+
+function parseCspOrigins(value) {
+  return [...new Set(String(value || '')
+    .split(',')
+    .map(normalizeCspOrigin)
+    .filter(Boolean))];
+}
+
 function injectAppearanceSettings(html, settings) {
   let modifiedHtml = html;
 
@@ -56,8 +77,8 @@ function injectAppearanceSettings(html, settings) {
   // 2. 追加 CSP 白名单域名
   const cspStatic = settings.csp_static || '';
   const cspApi = settings.csp_api || '';
-  const staticDomains = cspStatic.split(',').map(s => s.trim()).filter(Boolean);
-  const rawApiDomains = cspApi.split(',').map(s => s.trim()).filter(Boolean);
+  const staticDomains = parseCspOrigins(cspStatic);
+  const rawApiDomains = parseCspOrigins(cspApi);
 
   // API 域名需要同时支持 https 和 wss（WebSocket）
   const apiDomains = [];
@@ -83,27 +104,27 @@ function injectAppearanceSettings(html, settings) {
 
       // 按指令分类域名
       const scriptSrcDomains = [...new Set([
-        ...existingDomains.filter(d => ['https://challenges.cloudflare.com', 'https://static.cloudflareinsights.com'].includes(d)),
+        ...existingDomains.filter(d => [turnstileDomain, insightsDomain].includes(d)),
         ...staticDomains
       ])].join(' ');
 
       const styleSrcDomains = [...new Set([
-        ...existingDomains.filter(d => ['https://challenges.cloudflare.com', 'https://fonts.googleapis.com'].includes(d)),
+        ...existingDomains.filter(d => [turnstileDomain, fontsApiDomain].includes(d)),
         ...staticDomains
       ])].join(' ');
 
       const imgSrcDomains = [...new Set([
-        ...existingDomains.filter(d => ['https://challenges.cloudflare.com'].includes(d)),
+        ...existingDomains.filter(d => [turnstileDomain].includes(d)),
         ...staticDomains
       ])].join(' ');
 
       const fontSrcDomains = [...new Set([
-        ...existingDomains.filter(d => ['https://challenges.cloudflare.com', 'https://fonts.gstatic.com'].includes(d)),
+        ...existingDomains.filter(d => [turnstileDomain, fontsStaticDomain].includes(d)),
         ...staticDomains
       ])].join(' ');
 
       const connectSrcDomains = [...new Set([
-        ...existingDomains.filter(d => ['https://challenges.cloudflare.com', 'https://static.cloudflareinsights.com'].includes(d)),
+        ...existingDomains.filter(d => [turnstileDomain, insightsDomain].includes(d)),
         ...apiDomains
       ])].join(' ');
 

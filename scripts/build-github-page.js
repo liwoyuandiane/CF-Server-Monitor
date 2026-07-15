@@ -29,20 +29,32 @@ if (fs.existsSync(envPath)) {
 }
 
 // 读取环境变量
-const apiBase = process.env.API_BASE
-  ? process.env.API_BASE.split(',').map(s => s.trim()).filter(Boolean)
+const splitEnvList = (value) => value
+  ? value.split(',').map(s => s.trim()).filter(Boolean)
   : [];
+
+const normalizeCspOrigin = (value) => {
+  const raw = String(value || '').trim();
+  if (!raw || /[\s;"']/.test(raw)) return '';
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return '';
+    if (url.username || url.password || url.search || url.hash) return '';
+    if (url.pathname && url.pathname !== '/') return '';
+    return url.origin;
+  } catch (_) {
+    return '';
+  }
+};
+
+const apiBase = splitEnvList(process.env.API_BASE);
 const title = process.env.TITLE || '';
 const backgroundImage = process.env.BACKGROUND_IMAGE || '';
 
 // CSP 配置: 默认将 API_BASE 加入 csp_api 白名单
-const cspApiFromEnv = apiBase.length > 0 ? apiBase : [];
-const cspApiExtra = process.env.CSP_API
-  ? process.env.CSP_API.split(',').map(s => s.trim()).filter(Boolean)
-  : [];
-const cspStaticExtra = process.env.CSP_STATIC
-  ? process.env.CSP_STATIC.split(',').map(s => s.trim()).filter(Boolean)
-  : [];
+const cspApiFromEnv = apiBase.map(normalizeCspOrigin).filter(Boolean);
+const cspApiExtra = splitEnvList(process.env.CSP_API).map(normalizeCspOrigin).filter(Boolean);
+const cspStaticExtra = splitEnvList(process.env.CSP_STATIC).map(normalizeCspOrigin).filter(Boolean);
 
 // API_BASE 需要同时支持 https 和 wss（WebSocket）
 const apiDomainsWithWs = [];
@@ -87,7 +99,7 @@ for (const file of htmlFiles) {
     html = html.replace(/<title>.*<\/title>/, `<title>${escapeHtml(title)}</title>`);
   }
 
-  // 2. 注入 apiBase meta 标签（仅当有 API_BASE 环境变量时）
+  // 2. 注入运行时 meta 标签（仅当有 API_BASE 环境变量时）
   if (apiBase.length > 0) {
     html = html.replace(/<meta name="apiBase" content="[^"]*">/, `<meta name="apiBase" content="${escapeHtml(apiBase.join(','))}">`);
   }

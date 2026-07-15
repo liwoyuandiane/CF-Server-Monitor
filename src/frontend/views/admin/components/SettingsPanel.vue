@@ -373,6 +373,20 @@ const cspErrors = reactive({
   csp_api: ''
 })
 
+const isValidCspOrigin = (value) => {
+  const raw = String(value || '').trim()
+  if (!raw || /[\s;"']/.test(raw)) return false
+  try {
+    const url = new URL(raw)
+    if (url.protocol !== 'https:') return false
+    if (url.username || url.password || url.search || url.hash) return false
+    if (url.pathname && url.pathname !== '/') return false
+    return true
+  } catch (_) {
+    return false
+  }
+}
+
 const validateCspField = (field) => {
   const value = props.settings[field] || ''
   if (!value) {
@@ -381,7 +395,7 @@ const validateCspField = (field) => {
   }
   const domains = value.split(',').map(s => s.trim()).filter(Boolean)
   for (const domain of domains) {
-    if (!/^https:\/\/.+/.test(domain)) {
+    if (!isValidCspOrigin(domain)) {
       cspErrors[field] = props.trans.cspInvalidDomain || 'Each domain must start with https://'
       return false
     }

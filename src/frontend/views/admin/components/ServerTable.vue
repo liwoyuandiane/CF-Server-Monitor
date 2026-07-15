@@ -56,7 +56,7 @@
             <td>
               <div class="server-info">
                 <span v-if="server.region && server.region !== 'xx'">
-                  <img :src="'/flags/' + getFlagRegionCode(server.region) + '.svg'" :alt="server.region" class="flag-img">
+                  <img :src="getPublicAssetUrl('flags/' + getFlagRegionCode(server.region) + '.svg')" :alt="server.region" class="flag-img">
                 </span>
                 <span v-else>🏳️</span>
                 <router-link :to="'/server/' + server.id + (selectedApiIndex ? '?apiIndex=' + selectedApiIndex : '')" class="server-name-link">{{ server.name }}</router-link>
@@ -100,6 +100,7 @@
 
 <script setup>
 import { getFlagRegionCode, formatBytes } from '../../../utils/api'
+import { getPublicAssetUrl } from '../../../utils/config'
 
 defineProps({
   trans: { type: Object, required: true },

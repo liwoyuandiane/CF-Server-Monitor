@@ -4,7 +4,7 @@
       <div class="server-identity">
         <div class="status-indicator" :style="{ background: statusColor, boxShadow: '0 0 8px ' + statusColor }"></div>
         <span v-if="regionCode && regionCode !== 'xx'">
-          <img class="flag-img" :src="'/flags/' + regionCode + '.svg'" :alt="regionCode">
+          <img class="flag-img" :src="getPublicAssetUrl('flags/' + regionCode + '.svg')" :alt="regionCode">
         </span>
         <span v-else>🏳️</span>
         <span class="server-name">{{ server.name }}</span>
@@ -94,6 +94,7 @@
 <script setup>
 import { computed } from 'vue'
 import { formatBytes, getFlagRegionCode, getTrafficUsagePercent, isServerOnline } from '../utils/api'
+import { getPublicAssetUrl } from '../utils/config'
 import { useTranslation } from '../utils/i18n'
 import { PING } from '../utils/constants'
 import { normalizeTimestamp, formatDateTime } from '../utils/time.js'

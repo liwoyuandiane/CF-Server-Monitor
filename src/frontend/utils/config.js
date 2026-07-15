@@ -1,5 +1,6 @@
 let apiBases = []
 let wsBase = null
+let title = ''
 
 const stripTrailingSlash = (s) => String(s || '').replace(/\/+$/, '')
 
@@ -26,7 +27,7 @@ const setApiBases = (values) => {
 export const initConfig = async () => {
   setApiBases([window.location.origin])
 
-  // 从 meta 标签读取 apiBase
+  // GitHub Pages/static builds inject runtime config through meta tags.
   const metaApiBase = document.querySelector('meta[name="apiBase"]')?.content
   if (metaApiBase) {
     const bases = metaApiBase.split(',').map(s => s.trim()).filter(Boolean)
@@ -34,6 +35,8 @@ export const initConfig = async () => {
       setApiBases(bases)
     }
   }
+
+  title = document.title || ''
 
   return apiBases
 }
@@ -54,8 +57,11 @@ export const hasMultipleApiBases = () => {
   return getApiBases().length > 1
 }
 
-// title 和背景图已在构建时注入 HTML，此处保留空实现以兼容 api.js
-export const getTitle = () => ''
-export const getBackgroundImage = () => ''
+export const getTitle = () => title
 
-export default { initConfig, getApiBases, getWsBase, hasMultipleApiBases, getTitle, getBackgroundImage }
+export const getPublicAssetUrl = (assetPath) => {
+  const cleanPath = String(assetPath || '').replace(/^\/+/, '')
+  return cleanPath ? `./${cleanPath}` : './'
+}
+
+export default { initConfig, getApiBases, getWsBase, hasMultipleApiBases, getTitle, getPublicAssetUrl }
